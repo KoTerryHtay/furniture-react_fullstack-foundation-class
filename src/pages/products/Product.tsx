@@ -10,6 +10,7 @@ import {
 } from "@/api/query";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router";
+import { useCallback, useEffect } from "react";
 
 export default function ProductPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,21 +58,36 @@ export default function ProductPage() {
 
   const allProducts = data?.pages.flatMap((page) => page.products) ?? [];
 
-  const handleFilterChange = (categories: string[], types: string[]) => {
-    const newParams = new URLSearchParams();
-    if (categories.length > 0)
-      newParams.set("categories", encodeURIComponent(categories.join(",")));
-    if (types.length > 0)
-      newParams.set("types", encodeURIComponent(types.join(",")));
+  const handleFilterChange = useCallback(
+    (categories: string[], types: string[]) => {
+      const newParams = new URLSearchParams();
+      if (categories.length > 0)
+        newParams.set("categories", encodeURIComponent(categories.join(",")));
+      if (types.length > 0)
+        newParams.set("types", encodeURIComponent(types.join(",")));
+      localStorage.setItem("filter", JSON.stringify({ categories, types }));
 
-    // Update URL & triggers refetch via query key
-    setSearchParams(newParams);
-    // Cancel In-flight queries
-    queryClient.cancelQueries({ queryKey: ["products", "infinite"] });
-    // Clear cache
-    queryClient.removeQueries({ queryKey: ["products", "infinite"] });
-    refetch();
-  };
+      // Update URL & triggers refetch via query key
+      setSearchParams(newParams);
+      // Cancel In-flight queries
+      queryClient.cancelQueries({ queryKey: ["products", "infinite"] });
+      // Clear cache
+      queryClient.removeQueries({ queryKey: ["products", "infinite"] });
+      refetch();
+    },
+    [refetch, setSearchParams],
+  );
+
+  useEffect(() => {
+    const savedFilter = localStorage.getItem("filter");
+    if (!savedFilter) return;
+    const filter = JSON.parse(savedFilter) as {
+      categories: string[];
+      types: string[];
+    };
+    // console.log("filter >>>", filter);
+    handleFilterChange(filter.categories, filter.types);
+  }, [handleFilterChange]);
 
   return status === "pending" ? (
     <p>Loading...</p>

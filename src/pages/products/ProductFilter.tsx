@@ -43,11 +43,20 @@ export default function ProductFilter({
   selectedType,
   onFilterChange,
 }: ProductFilterProps) {
+  const savedFilter = localStorage.getItem("filter") || "";
+
+  const { categories, types } = savedFilter.length
+    ? (JSON.parse(savedFilter) as {
+        categories: string[];
+        types: string[];
+      })
+    : { categories: [], types: [] };
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      categories: selectedCategory,
-      types: selectedType,
+      categories: categories.length ? categories : selectedCategory,
+      types: types.length ? types : selectedType,
     },
   });
 
@@ -162,6 +171,7 @@ export default function ProductFilter({
           variant={"outline"}
           onClick={() => {
             form.reset({ categories: [], types: [] });
+            localStorage.removeItem("filter");
           }}
           className="mr-1"
         >
