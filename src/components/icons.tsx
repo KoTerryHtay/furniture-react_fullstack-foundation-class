@@ -15,6 +15,7 @@ import {
   TrashIcon,
   HeartFilledIcon,
 } from "@radix-ui/react-icons";
+import { CircleUserRound, Mail, Shield } from "lucide-react";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
@@ -66,4 +67,7 @@ export const Icons = {
   gear: GearIcon,
   exit: ExitIcon,
   trash: TrashIcon,
+  User: CircleUserRound,
+  password: Shield,
+  mail: Mail,
 };

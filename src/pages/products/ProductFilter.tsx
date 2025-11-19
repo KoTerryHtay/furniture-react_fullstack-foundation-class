@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useFilterStore } from "@/store/filterStore";
 
 interface FilterProps {
   categories: Category[];
@@ -21,8 +22,8 @@ interface FilterProps {
 
 interface ProductFilterProps {
   filterList: FilterProps;
-  selectedCategory: string[];
-  selectedType: string[];
+  // selectedCategory: string[];
+  // selectedType: string[];
   onFilterChange: (category: string[], type: string[]) => void;
 }
 
@@ -39,29 +40,23 @@ const FormSchema = z.object({
 
 export default function ProductFilter({
   filterList,
-  selectedCategory,
-  selectedType,
+  // selectedCategory,
+  // selectedType,
   onFilterChange,
 }: ProductFilterProps) {
-  const savedFilter = localStorage.getItem("filter") || "";
-
-  const { categories, types } = savedFilter.length
-    ? (JSON.parse(savedFilter) as {
-        categories: string[];
-        types: string[];
-      })
-    : { categories: [], types: [] };
+  const { categories, types } = useFilterStore.getState();
+  // console.log("ProductFilter >>>", { categories, types });
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
+    values: { categories, types },
     defaultValues: {
-      categories: categories.length ? categories : selectedCategory,
-      types: types.length ? types : selectedType,
+      categories,
+      types,
     },
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    // alert(JSON.stringify(data));
     // console.log("Submit data ...", data);
     onFilterChange(data.categories, data.types);
   }
@@ -171,7 +166,6 @@ export default function ProductFilter({
           variant={"outline"}
           onClick={() => {
             form.reset({ categories: [], types: [] });
-            localStorage.removeItem("filter");
           }}
           className="mr-1"
         >

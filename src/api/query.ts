@@ -2,6 +2,7 @@
 import { keepPreviousData, QueryClient } from "@tanstack/react-query";
 
 import api from ".";
+import type { User } from "@/types";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,4 +133,22 @@ const fetchOneProduct = async (id: number) => {
 export const oneProductQuery = (id: number) => ({
   queryKey: ["products", "detail", id],
   queryFn: () => fetchOneProduct(id),
+});
+
+const fetchUserProfileInfo = async () => {
+  const user = (await api.get("users/profile/my-profile-info")).data
+    .user as User;
+
+  if (!user) {
+    throw new Response("", {
+      status: 400,
+      statusText: "Unknown Error",
+    });
+  }
+  return user;
+};
+
+export const userProfileInfo = () => ({
+  queryKey: ["user-profile-info"],
+  queryFn: fetchUserProfileInfo,
 });

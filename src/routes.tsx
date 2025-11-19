@@ -23,6 +23,9 @@ import {
   verifyLoader,
 } from "./router/loader";
 import {
+  changeEmail,
+  changePassword,
+  changeUserName,
   confirmAction,
   loginAction,
   logoutAction,
@@ -39,6 +42,12 @@ import ConfirmPasswordPage from "./pages/auth/ConfirmPassword";
 import ResetPasswordPage from "./pages/auth/ResetPassword";
 import VerifyOtpPage from "./pages/auth/VerifyOtp";
 import NewPasswordPage from "./pages/auth/NewPassword";
+import SettingsPage from "./pages/settings/Settings";
+
+import ChangePasswordPage from "./pages/auth/ChangePassword";
+import SettingsRootLayout from "./pages/settings/SettingsRootLayout";
+import ChangeUserNamePage from "./pages/auth/ChangeUserName";
+import ChangeEmailPage from "./pages/auth/ChangeEmailPage";
 
 const BlogRootLayout = lazy(() => import("@/pages/blogs/BlogRootLayout"));
 const BlogPage = lazy(() => import("@/pages/blogs/Blog"));
@@ -71,6 +80,31 @@ export const router = createBrowserRouter([
         loader: homeLoader,
       },
       { path: "about", Component: AboutPage },
+
+      {
+        path: "settings",
+        Component: SettingsRootLayout,
+        children: [
+          { index: true, Component: SettingsPage },
+          {
+            path: "change-username",
+            Component: ChangeUserNamePage,
+            action: changeUserName,
+          },
+          {
+            path: "change-email",
+            Component: ChangeEmailPage,
+            action: changeEmail,
+          },
+          {
+            path: "change-password",
+            Component: ChangePasswordPage,
+            action: changePassword,
+          },
+        ],
+      },
+
+      // /blogs
       {
         path: "blogs",
         lazy: async () => ({ Component: BlogRootLayout }),
@@ -95,6 +129,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      // /products
       {
         path: "products",
         Component: ProductRootLayout,
@@ -114,12 +149,14 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  // /login
   {
     path: "login",
     Component: LoginPage,
     action: loginAction,
     loader: loginLoader,
   },
+  // /register
   {
     path: "register",
     Component: AuthRootLayout,
@@ -149,6 +186,7 @@ export const router = createBrowserRouter([
     action: logoutAction,
     loader: () => redirect("/"),
   },
+  // /reset
   {
     path: "/reset",
     Component: AuthRootLayout,

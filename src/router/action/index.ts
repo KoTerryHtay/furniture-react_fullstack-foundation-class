@@ -248,3 +248,93 @@ export const newPasswordAction = async ({ request }: ActionFunctionArgs) => {
     } else throw error;
   }
 };
+
+export const changePassword = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+
+  // console.log("formData in changePassword action >>>", formData);
+
+  const credentials = {
+    newPassword: formData.get("newPassword"),
+    currentPassword: formData.get("currentPassword"),
+  };
+
+  // console.log("credentials >>>", credentials);
+
+  try {
+    const response = await authApi.post("change-password", credentials);
+
+    if (response.status !== 200) {
+      return { error: response?.data || "Change Password failed!" };
+    }
+
+    return redirect("/");
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return error.response?.data || { error: "Change Password failed!" };
+    } else throw error;
+  }
+};
+
+export const changeUserName = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+
+  // console.log("formData in changePassword action >>>", formData);
+
+  const credentials = {
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    password: formData.get("password"),
+  };
+
+  // console.log("credentials >>>", credentials);
+
+  try {
+    const response = await authApi.post("change-username", credentials);
+
+    if (response.status !== 200) {
+      return { error: response?.data || "Change User Name failed!" };
+    }
+
+    await queryClient.invalidateQueries({
+      queryKey: ["user-profile-info"],
+    });
+
+    return redirect("/");
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return error.response?.data || { error: "Change User Name failed!" };
+    } else throw error;
+  }
+};
+
+export const changeEmail = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+
+  // console.log("formData in changePassword action >>>", formData);
+
+  const credentials = {
+    email: formData.get("email"),
+    password: formData.get("password"),
+  };
+
+  // console.log("credentials >>>", credentials);
+
+  try {
+    const response = await authApi.post("change-email", credentials);
+
+    if (response.status !== 200) {
+      return { error: response?.data || "Change User Name failed!" };
+    }
+
+    await queryClient.invalidateQueries({
+      queryKey: ["user-profile-info"],
+    });
+
+    return redirect("/");
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return error.response?.data || { error: "Change User Name failed!" };
+    } else throw error;
+  }
+};

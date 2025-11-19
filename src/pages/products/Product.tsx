@@ -9,14 +9,31 @@ import {
   queryClient,
 } from "@/api/query";
 import { Button } from "@/components/ui/button";
-import { useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
+import { useFilterStore } from "@/store/filterStore";
 import { useCallback, useEffect } from "react";
+
+const wordTrim = (searchParams: string | null) =>
+  searchParams
+    ? decodeURIComponent(searchParams)
+        .split(",")
+        .map((param) => Number(param.trim()))
+        .filter((param) => !isNaN(param))
+        .map((param) => param.toString())
+    : [];
 
 export default function ProductPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { categories, types } = useFilterStore.getState();
+  const { addFilter } = useFilterStore();
+  // console.log("FilterStore >>>", { categories, types });
+
+  const pathname = useLocation();
 
   const rawCategory = searchParams.get("categories");
   const rawType = searchParams.get("types");
+
+  console.log({ rawCategory, rawType });
 
   // Decode & parse search params
   const selectedCategory = rawCategory
@@ -65,7 +82,10 @@ export default function ProductPage() {
         newParams.set("categories", encodeURIComponent(categories.join(",")));
       if (types.length > 0)
         newParams.set("types", encodeURIComponent(types.join(",")));
-      localStorage.setItem("filter", JSON.stringify({ categories, types }));
+
+      addFilter(categories, types);
+
+      // console.log("handleFilterChange >>>", categories, types);
 
       // Update URL & triggers refetch via query key
       setSearchParams(newParams);
@@ -75,19 +95,22 @@ export default function ProductPage() {
       queryClient.removeQueries({ queryKey: ["products", "infinite"] });
       refetch();
     },
-    [refetch, setSearchParams],
+    [addFilter, refetch, setSearchParams],
   );
 
   useEffect(() => {
-    const savedFilter = localStorage.getItem("filter");
-    if (!savedFilter) return;
-    const filter = JSON.parse(savedFilter) as {
-      categories: string[];
-      types: string[];
-    };
-    // console.log("filter >>>", filter);
-    handleFilterChange(filter.categories, filter.types);
-  }, [handleFilterChange]);
+    if (!pathname.search) {
+      handleFilterChange(categories, types);
+    }
+  }, [categories, handleFilterChange, pathname.search, types]);
+
+  useEffect(() => {
+    if (rawCategory && !rawType) addFilter(wordTrim(rawCategory), []);
+    if (!rawCategory && rawType) addFilter([], wordTrim(rawType));
+    if (rawCategory && rawType)
+      addFilter(wordTrim(rawCategory), wordTrim(rawType));
+    // console.log("searchParamTrim >>>", { rawCategory, rawType });
+  }, [addFilter, rawCategory, rawType]);
 
   return status === "pending" ? (
     <p>Loading...</p>
@@ -99,8 +122,8 @@ export default function ProductPage() {
         <section className="my-8 ml-4 w-full lg:ml-0 lg:w-1/5">
           <ProductFilter
             filterList={cateType}
-            selectedCategory={selectedCategory}
-            selectedType={selectedType}
+            // selectedCategory={selectedCategory}
+            // selectedType={selectedType}
             onFilterChange={handleFilterChange}
           />
         </section>
